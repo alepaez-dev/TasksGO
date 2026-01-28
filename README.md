@@ -1,1 +1,10 @@
 # TasksGO
+
+
+### License
+Copyright (c) 2026 Alejandra Hernandez Paez
+
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+
+You may use this software for noncommercial purposes only.
+Commercial use requires a separate license — contact the author for inquiries.
