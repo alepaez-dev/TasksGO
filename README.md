@@ -69,7 +69,7 @@ The `[QA]` tag automatically surfaces that item to the QA view, saving dev time 
 ### Open Questions
 
 **Important:**
-- (none yet)
+- What makes us different from simply appending a Claude extension and asking, “What was tested here?” OR can we work with AI because the data is clearly shown in the ticket? !!!!!!!!!!!
 
 **Less urgent:**
 - Multiple devs/QAs working on the same ticket can get messy. How do we handle ownership and visibility when a ticket is poorly scoped by the PM?
