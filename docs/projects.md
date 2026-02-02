@@ -3,13 +3,41 @@
 Projects are the top-level containers in TasksGO.
 They represent **areas of work**, not workflows.
 
+---
+
+## Navigation
+
+The UI has an always-visible left sidebar for navigation:
+
+- **Tasks** (home)
+- Tickets
+- Docs
+- Projects
+
+Tasks is the default landing screen.
+
+```
+┌─────────────────────────────────────────────┐
+│  [Logo]                                     │
+├──────────┬──────────────────────────────────┤
+│Project   │                                  │
+│  Tasks ← │   Main content area              │
+│  Tickets │                                  │
+│  Docs    │                                  │
+│          │                                  │
+│          │                                  │
+└──────────┴──────────────────────────────────┘
+```
+
 A project can be:
 - a software system
 - a feature area (TBD)
 - a learning goal
 - a personal initiative
 
-Projects organize **tasks and tickets**, but they do not dictate how work must be done.
+Projects organize **tasks and tickets and docs**, but they do not dictate how work must be done.
+
+Every user has a **default project**. Tasks created without an explicit project go there.
 
 > Projects evolve. Tools should support that evolution without forcing process too early.
 

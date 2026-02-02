@@ -23,6 +23,7 @@ its structure and visibility to how each role thinks and works.
 - Verification is explicit and structured
 - Ownership is clear
 - Noise is minimized by design
+- Anyone can create a ticket (any role)
 
 > This is not a general note app.  
 > Notes must remain **ticket-scoped and intentional**.
@@ -33,16 +34,9 @@ its structure and visibility to how each role thinks and works.
 
 Each ticket is divided into **role-based views** implemented as tabs.
 
-If a role is not allowed to see a view, **the tab does not appear**.
+See [Users & Roles](users.md) for detailed role permissions.
 
 [ Overview ] [ Dev ] [ QA ] [ Activity ]
-| Role | Overview | Dev | QA | Activity |
-|------|----------|-----|----|----------|
-| PM   | ✅        | ❌  | ❌ | ✅       |
-| Dev  | ✅        | ✅  | ❌ | ✅       |
-| QA   | ✅        | ❌  | ✅ | ✅       |
-PMs do not access Dev or QA tabs by default.
-Instead, they see **summaries and shortcuts** in the Overview.
 
 --- 
 
@@ -89,7 +83,9 @@ Purpose: engineering thinking, not documentation.
 - Editable
 - Allowed to be incomplete or incorrect
 - Not required to be cleaned up
-- May be private or team-visible
+
+**Privacy**: Only the dev assigned to the ticket can see their own dev notes.
+Other devs on the project cannot access them.
 
 Dev notes are temporary thinking artifacts:
 they support reasoning, exploration, and decision-making,
@@ -117,6 +113,8 @@ They are verifiable assertions with state.
 
 Evidence over optimism.
 
+When QA verifies an scenario or a ticket they need to add evidence. (text forcefully and images/videos optional)
+
 ---
 
 # Scenarios 🔸
@@ -131,17 +129,9 @@ Scenarios:
 - Have explicit state
 - Carry their own evidence
 
-Permissions
-- Dev can create scenarios
-- QA can create, edit, archive, or delete scenarios
-- PM cannot create scenarios (v1)
+See [Users & Roles](users.md) for scenario permissions.
 
-Once created:
-- Dev cannot delete scenarios
-- Dev cannot mark scenarios out of scope (this will need an interaction in the comments)
-- QA owns the final checklist
-
-This prevents silent scope reduction and creates clear accountability.
+QA owns the final checklist. This prevents silent scope reduction and creates clear accountability.
 
 ---
 
@@ -200,3 +190,23 @@ Configurable per ticket (default: All).
 1. What makes us different from simply appending a Claude extension and asking, "What was tested here?" OR can we work with AI because the data is clearly shown in the ticket? !!!!!!!!!!!
 2. Multiple devs/QAs working on the same ticket can get messy. How do we handle ownership and visibility when a ticket is poorly scoped by the PM?
 3. How can we help PMs create better tickets (AI?)? NTH, not the main business idea; looks like an AI wrapper. A good ticket creation assistant with good data might be useful, but getting good data is the important thing, not AI.
+
+# AI Features (V2)
+
+Not core for v1. v1 focus is collecting good structured data. AI amplifies that data later.
+
+## Planned Features
+- Ticket assistant creator (vector DB for similar tickets, topics, docs)
+- Ticket assistant reports (requires reports feature first)
+- "What scenarios have failed before on similar tickets?"
+
+## Ticket Intents
+
+Intents are dynamic topics extracted from tickets (e.g., "task ownership", "email notifications").
+Projects have different domains; intents should emerge from data, not be predefined.
+
+**Phase 1: Similarity-based**
+Tickets are converted to vectors embeddings. When creating a ticket, show related tickets based on vector proximity.
+
+**Phase 2: Clustering-based** (overengineering if we don't have the data)
+Once a project has enough tickets (20+) do clustering to group tickets into named topics. Enables browsing by category

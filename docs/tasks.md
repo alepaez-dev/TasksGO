@@ -30,11 +30,7 @@ Tasks do **not** require:
 - evidence
 - delivery readiness
 
----
-
-## What Tasks Are Not
-
-Tasks are not:
+Tasks are **not**:
 - tickets
 - requirements
 - verification artifacts
@@ -48,12 +44,27 @@ it should be promoted to a **ticket**.
 ## Tasks and Projects
 
 - Every task belongs to a project
+- Tasks created without an explicit project go to the default project
 - Tasks exist in all project modes
-- Tasks are never disabled
 
 In Delivery projects:
 - Tasks support execution work
 - Tickets represent delivery commitments
+
+---
+
+## Task State (v1)
+
+Tasks intentionally have a **binary state only**:
+
+- **Undone**
+- **Done**
+
+There are no additional states such as "in progress", "blocked", "waiting", or "converted".
+
+Tasks can be **archived** to hide them from active views.
+Archiving is a visibility action, not a state change.
+A task remains Done or Undone even when archived.
 
 ---
 
@@ -92,4 +103,49 @@ Indented lines can be used to add context:
 - Investigate webhook race condition #task
   - Happens when webhook arrives before DB commit
   - Suspect transaction boundary issue
-```md
+```
+
+(this can be a config setting.)
+Editing or deleting notes never deletes tasks.
+
+---
+
+## Completing Tasks
+
+Tasks can be completed:
+- from the global Tasks view (primary)
+- from ticket context via a task side panel (secondary)
+
+Tasks are never completed implicitly through text edits.
+
+---
+
+## Priority (v1)
+
+Tasks can have a priority.
+
+Rules:
+- If a task has a custom priority, use it
+- Else if linked to a ticket, use ticket priority
+- Else, no priority (default)
+
+Changing a ticket's priority updates all linked tasks that have not overridden it.
+
+---
+
+## Tasks and Docs
+
+Tasks can be converted into Docs when execution turns into reusable knowledge.
+
+Conversion:
+- creates a Doc using the task’s title and description
+- links the Task ↔ Doc
+- does not introduce a new task state
+
+A task may be:
+- done and linked to a doc
+- undone and linked to a doc
+
+“Converted to doc” is a relationship, not a status.
+
+
