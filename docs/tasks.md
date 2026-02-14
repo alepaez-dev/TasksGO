@@ -16,7 +16,7 @@ regardless of project mode.
 Tasks are:
 - actionable
 - meant to be completed
-- PERSONAL
+- **private and personal** (only visible to the task owner, never to other users)
 
 Examples:
 - Investigate webhook race condition
@@ -65,7 +65,7 @@ There are no additional states such as "in progress", "blocked", "waiting", or "
 Tasks can be **archived** to hide them from active views.
 Archiving is a visibility action, not a state change.
 A task remains Done or Undone even when archived.
-
+Due date -> v2
 ---
 
 ## Creating Tasks
@@ -73,8 +73,9 @@ A task remains Done or Undone even when archived.
 Tasks can be created in multiple ways:
 
 - From the global Tasks view
-- From a side panel available anywhere
-- From Dev Notes inside a ticket
+- From a right side panel available anywhere
+- From Dev Notes inside a ticket (task will be linked to the ticket)
+- Only assigne possible is the user (PM can't assign to Dev, tasks are private and personal)
 
 Creation should be fast
 
@@ -106,7 +107,11 @@ Indented lines can be used to add context:
 ```
 
 (this can be a config setting.)
-Editing or deleting notes never deletes tasks.
+Editing the `#task` line in Dev Notes syncs the task title.
+The task title always reflects the current text of the originating line.
+
+Deleting a note line never deletes the linked task.
+The task persists independently once created.
 
 ---
 
@@ -133,19 +138,33 @@ Changing a ticket's priority updates all linked tasks that have not overridden i
 
 ---
 
+## Task and Ticket State Independence
+
+Task state and ticket state are **completely independent**.
+
+- Completing a ticket does not complete its linked tasks
+- Completing a task does not affect the linked ticket
+- A task can remain Undone after its linked ticket is Done
+
+This is intentional. Tasks often outlive tickets:
+- "When this ticket is deployed, update the staging config"
+- "Write a retrospective note after release"
+
+
+---
+
 ## Tasks and Docs
 
-Tasks can be converted into Docs when execution turns into reusable knowledge.
+Tasks can be converted into Docs when execution turns into reusable knowledge. (not sure about this, makes sense for study projects, but seems like it is adding limited value, so it shouldn't be something we should focus on the UI interface) -> TODO: I need to think about this
 
 Conversion:
-- creates a Doc using the task’s title and description
-- links the Task ↔ Doc
+- creates a Doc using the task's title and description
+- links the Task ↔ Doc -> 0 value on the UI side, few value on the engineering side, maybe for reports, but for what else ?
 - does not introduce a new task state
 
 A task may be:
 - done and linked to a doc
 - undone and linked to a doc
 
-“Converted to doc” is a relationship, not a status.
-
+"Converted to doc" is a relationship, not a status.
 

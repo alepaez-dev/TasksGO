@@ -98,9 +98,13 @@ Example:
 ```
 ### QA Tagging
 
-Lines tagged with [QA] automatically surface in the QA view as an scenario.
+`[QA]` tagging is the **only mechanism** that makes Dev Notes content visible to others.
 
-Dev thinking → QA intent → PM visibility
+When a dev writes a `[QA]` tag on a line, they are **explicitly choosing** to publish that line to the QA view as a scenario. All other Dev Notes content remains strictly private to the dev.
+
+This is an intentional act, not an automatic extraction. The dev controls what crosses the privacy boundary.
+
+Dev thinking (private) → `[QA]` tag (explicit publish) → QA scenario (shared) → PM visibility via QA summary
 
 ---
 
@@ -183,6 +187,7 @@ Notifications (Per Ticket)
 - Status changes
 
 Configurable per ticket (default: All).
+A toggle with "Create tasks for all upcoming scenarios"
 
 ---
 

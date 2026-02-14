@@ -64,14 +64,14 @@ Purpose:
 
 Can:
 - create tickets (Delivery mode only)
-- view ticket Overview + Activity
+- view ticket Overview + Activity + QA tab (read-only)
 - access Dev tab (only for tickets they are assigned to)
 - write and manage Dev Notes
 - create tasks (global + from Dev Notes)
 - create QA scenarios (but not verify them)
 
 Cannot:
-- access QA tab (unless also QA)
+- edit QA scenarios (unless also QA)
 - mark scenarios as Verified (unless also QA)
 - delete QA scenarios (unless also QA)
 - manage scenario evidence (unless also QA)
@@ -87,8 +87,8 @@ Purpose:
 
 Can:
 - create tickets (Delivery mode only)
-- view ticket Overview + Activity
-- access QA tab
+- view ticket Overview + Activity + QA tab
+- edit QA tab (only role with edit access)
 - create/edit/delete QA scenarios (soft delete)
 - mark scenarios as Pending / Failing / Verified
 - attach and manage scenario evidence
@@ -105,17 +105,15 @@ Purpose:
 
 Can:
 - create tickets (Delivery mode only)
-- view ticket Overview + Activity
+- view ticket Overview + Activity + QA tab (read-only)
 - view QA Summary in Overview
 - comment and ask questions
 
 Cannot (v1):
 - access Dev tab
-- access QA tab
+- edit QA tab
 - create/edit QA scenarios
 - edit Dev Notes
-
-PM should understand delivery without seeing raw QA evidence or Dev reasoning by default.
 
 ---
 
@@ -130,7 +128,7 @@ PM should understand delivery without seeing raw QA evidence or Dev reasoning by
 - Tickets exist
 - Overview is visible to project members
 - Dev tab requires DEV role
-- QA tab requires QA role
+- QA tab is visible to all, editable by QA only
 
 Roles become relevant only when the project mode requires them.
 
@@ -141,11 +139,9 @@ Roles become relevant only when the project mode requires them.
 In Delivery mode:
 
 - Overview: visible to all project members
-- Dev: visible only to users with DEV
-- QA: visible only to users with QA
-- Activity: visible to all project members (optional v1)
-
-A user with multiple roles sees the union of permitted views.
+- Dev: visible only to assigned DEV
+- QA: visible to all, editable by QA only
+- Activity: visible to all project members
 
 ---
 

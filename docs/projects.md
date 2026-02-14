@@ -9,22 +9,23 @@ They represent **areas of work**, not workflows.
 
 The UI has an always-visible left sidebar for navigation:
 
-- **Tasks** (home)
+- **Home** (default landing)
+- Tasks
 - Tickets
 - Docs
 - Projects
 
-Tasks is the default landing screen.
+Home is the default landing screen.
 
 ```
 ┌─────────────────────────────────────────────┐
 │  [Logo]                                     │
 ├──────────┬──────────────────────────────────┤
 │Project   │                                  │
-│  Tasks ← │   Main content area              │
+│  Home  ← │   Main content area              │
+│  Tasks   │                                  │
 │  Tickets │                                  │
 │  Docs    │                                  │
-│          │                                  │
 │          │                                  │
 └──────────┴──────────────────────────────────┘
 ```
@@ -122,11 +123,13 @@ Even in Delivery mode:
 ## Linking Tasks and Tickets
 
 - Tasks can optionally link to tickets
-- Tickets can reference related tasks
 - Links are lightweight and non-intrusive
+- Task links are **private to the task owner**
+- No other user (PM, QA, other devs) can see another user's linked tasks on a ticket
+- A ticket does not expose how many tasks are linked to it, or by whom
 
 Tasks never live inside tickets by default.
-They remain accessible from the global Tasks view.
+They remain accessible only from the owner's global Tasks view.
 
 ---
 
