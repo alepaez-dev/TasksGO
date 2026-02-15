@@ -14,6 +14,11 @@ func CORS(appEnv string) func(http.Handler) http.Handler {
 		allowedOrigins = []string{"http://localhost:3000"}
 	}
 
+	// block all cross-origin requests.
+	if len(allowedOrigins) == 0 {
+		return func(next http.Handler) http.Handler { return next }
+	}
+
 	return cors.Handler(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
