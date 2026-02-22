@@ -6,7 +6,7 @@
     - Overview tab mockups - ALL desktop Done ✅
     - Dev tab - ALL desktop Done ✅
     - QA - ALL desktop Done ✅
-    - Activity - TBD.
+    - Activity - In progress.
 - Docs - TBD
 
 

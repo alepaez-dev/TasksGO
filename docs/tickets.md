@@ -235,6 +235,25 @@ More context improves accuracy, but is not required. -> Need to test accuracy an
 
 ---
 
+## AI-Generated Ask Resolution Summary 🔸 (V1)
+
+**Goal**
+
+When an Ask is resolved, generate a brief title summarizing how it was resolved.
+
+**Implementation** (Consecutive system events should collapse)
+- Uses an open-source AI model (TBD)
+- Fast and free
+- Generated automatically on Ask resolution
+- Displayed in Activity tab for quick context
+
+**Example**
+![Resolved](../assets/Screenshot-2026-02-22-at-10.30.38-a.m.png)
+
+![Mark as rersolved](../assets/Screenshot-2026-02-22-at-10.31.13-a.m.png)
+
+---
+
 ## Other Planned Features
 - Ticket assistant creator (vector DB for similar tickets, topics, docs)
 - Ticket assistant reports (requires reports feature first)
