@@ -1,12 +1,12 @@
 ## Mockups
 - Main layout - Done.
-- Home page (notifications, activities, etc) - new|unsure -> we can show waiting on tickets, so when something is blocked is not lost on software notifications or emails. We can always check it in home page.
-- Tasks page - ALL mockups done ✅
+- Home page (notifications, activities, etc) - we can show waiting on tickets, so when something is blocked is not lost on software notifications or emails. We can always check it in home page.
+- Tasks page - ALL desktop mockups done ✅
 - Tickets - In progress
-    - Overview tab mockups - ALL mockups Done ✅
-    - Dev tab - ALL mockups done ✅ -> need to add same right aside component from Tasks page
-    - QA - in progress
-    - Activity - TBD.
+    - Overview tab mockups - ALL desktop Done ✅
+    - Dev tab - ALL desktop Done ✅
+    - QA - ALL desktop Done ✅
+    - Activity - In progress.
 - Docs - TBD
 
 
