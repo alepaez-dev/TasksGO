@@ -5,7 +5,7 @@
 - Tickets - In progress
     - Overview tab mockups - ALL desktop Done ✅
     - Dev tab - ALL desktop Done ✅
-    - QA - in progress
+    - QA - ALL desktop Done ✅
     - Activity - TBD.
 - Docs - TBD
 

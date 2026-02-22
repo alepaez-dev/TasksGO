@@ -145,15 +145,20 @@ QA owns the final checklist. This prevents silent scope reduction and creates cl
 - Fixed — Needs Retest
 - Verified
 - (Optional) Blocked
-- (Optional) Out of Scope
+- (Optional) Waived (requires a brief reason, max 280 characters)
 
 --- 
 
 ## Evidence Handling
 Evidence is attached per scenario, not per ticket
 - Supports images, videos, logs, and links
+- Maximum **4 attachments per scenario**
+- Maximum **2MB per attachment** (images, logs, links)
+- Maximum **10MB per attachment** (videos)
 - Collapsed by default
 - Displayed via an indicator: 📎 2
+
+If a scenario needs more than 4 attachments, it is likely too broad and should be split into smaller scenarios.
 
 When a scenario is Verified, it collapses to a single line:
 ```
@@ -200,7 +205,37 @@ A toggle with "Create tasks for all upcoming scenarios"
 
 Not core for v1. v1 focus is collecting good structured data. AI amplifies that data later.
 
-## Planned Features
+## AI-Assisted Bug Reproduction 🔸 (Hidden BETA feature in V1)
+
+**Goal**
+
+When QA attaches a video or images to a scenario we can:
+- Generate draft steps to reproduce
+- Suggest a likely expected behavior -> it would be better if this is filled by QA
+
+(this is gonna be interesting to achieve.)
+
+---
+
+**What We Need**
+
+To enable this, qa engineer  must:
+
+**1. Required Inputs**
+- Scenario title
+- At least one image or video attachment
+
+**2. Recommended Minimal Context (Optional)**
+- Expected result (1 line)
+- Actual result (1 line)
+- Environment (browser/device/app version)
+- Frequency (always / sometimes / once)
+
+More context improves accuracy, but is not required. -> Need to test accuracy and AI speed of this
+
+---
+
+## Other Planned Features
 - Ticket assistant creator (vector DB for similar tickets, topics, docs)
 - Ticket assistant reports (requires reports feature first)
 - "What scenarios have failed before on similar tickets?"
