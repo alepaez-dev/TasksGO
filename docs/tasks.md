@@ -55,17 +55,29 @@ In Delivery projects:
 
 ## Task State (v1)
 
-Tasks intentionally have a **binary state only**:
+Tasks have three allowed statuses:
 
-- **Undone**
+- **To Do**
+- **In Progress**
 - **Done**
 
-There are no additional states such as "in progress", "blocked", "waiting", or "converted".
+There are no additional states such as "blocked", "waiting", or "converted".
 
 Tasks can be **archived** to hide them from active views.
 Archiving is a visibility action, not a state change.
 A task remains Done or Undone even when archived.
-Due date -> v2
+
+---
+
+## Due Date (v1)
+
+Tasks can have an optional due date.
+
+Rules:
+- Due dates are optional
+- No automatic reminders or notifications in v1
+- Overdue tasks are visually indicated but do not change state
+
 ---
 
 ## Creating Tasks

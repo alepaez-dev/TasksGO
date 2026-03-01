@@ -258,6 +258,10 @@ When an Ask is resolved, generate a brief title summarizing how it was resolved.
 - Ticket assistant creator (vector DB for similar tickets, topics, docs)
 - Ticket assistant reports (requires reports feature first)
 - "What scenarios have failed before on similar tickets?"
+- **GitHub Integration for QA Scenario Generation** (V2, nice to have)
+  - Connect private GitHub repos
+  - Generate QA scenarios based on code changes, PRs, and commit history
+  - Suggest test cases based on modified files and functions
 
 ## Ticket Intents
 

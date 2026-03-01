@@ -6,8 +6,15 @@
     - Overview tab mockups - ALL desktop Done ✅
     - Dev tab - ALL desktop Done ✅
     - QA - ALL desktop Done ✅
-    - Activity - In progress.
+    - Activity - Done ✅
 - Docs - TBD
+- Settings - In progress
+    - Profile - Done ✅
+    - Notifications - Done ✅
+    - Project - In progress
+    - Team Members - TBD
+    - Logs - TBD
+    - Admin - TBD
 
 
 ## Home v1
