@@ -22,7 +22,9 @@ jobs:
           pattern="^($types)(\([a-zA-Z0-9_-]+\))?: .+"
           failed=0
 
-          while IFS= read -r subject; do
+          for sha in $(git log --format=%H origin/main..HEAD); do
+            subject=$(git log -1 --format=%s "$sha")
+
             # Skip merge and revert auto-commits
             case "$subject" in
               Merge\ *|Revert\ *) continue ;;
@@ -37,9 +39,19 @@ jobs:
               echo "TOO LONG (${#subject} chars): $subject"
               failed=1
             fi
-          done <<EOF
-          $(git log --format=%s origin/main..HEAD)
-          EOF
+
+            # Body lines max 200 chars
+            line_num=0
+            while IFS= read -r line; do
+              line_num=$((line_num + 1))
+              if [ ${#line} -gt 200 ]; then
+                echo "BODY LINE TOO LONG (line $line_num, ${#line} chars) in commit $sha"
+                failed=1
+              fi
+            done <<BODY
+          $(git log -1 --format=%b "$sha")
+          BODY
+          done
 
           if [ "$failed" -eq 1 ]; then
             echo ""
