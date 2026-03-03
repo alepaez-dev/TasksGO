@@ -53,12 +53,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
         run: |
-          branch="${{ github.head_ref }}"
           pattern="^(feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert)/.+"
 
-          if ! echo "$branch" | grep -Eq "$pattern"; then
-            echo "ERROR: branch '$branch' does not follow the naming convention."
+          if ! echo "$BRANCH" | grep -Eq "$pattern"; then
+            echo "ERROR: branch '$BRANCH' does not follow the naming convention."
             echo "Expected: <type>/<description>"
             exit 1
           fi
