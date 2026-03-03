@@ -1,0 +1,29 @@
+#!/bin/sh
+# Validate branch name follows the conventional pattern.
+# Pattern: <type>/<description>
+
+set -e
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+
+# Allow main branch
+if [ "$branch" = "main" ]; then
+  exit 0
+fi
+
+# Allow detached HEAD (e.g. CI builds, tags)
+if [ -z "$branch" ]; then
+  exit 0
+fi
+
+pattern="^(feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert)/.+"
+
+if ! echo "$branch" | grep -Eq "$pattern"; then
+  echo "ERROR: branch name does not follow the naming convention."
+  echo ""
+  echo "  Expected: <type>/<description>"
+  echo "  Allowed types: feat, fix, chore, docs, refactor, test, style, perf, ci, build, revert"
+  echo ""
+  echo "  Got: $branch"
+  exit 1
+fi

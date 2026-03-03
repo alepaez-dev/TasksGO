@@ -1,0 +1,52 @@
+#!/bin/sh
+# Validate commit messages follow Conventional Commits format.
+# Format: <type>: <subject>  or  <type>(<scope>): <subject>
+
+set -e
+
+msg_file="$1"
+msg=$(cat "$msg_file")
+subject=$(head -n 1 "$msg_file")
+
+# Allow merge commits
+case "$subject" in
+  Merge\ *) exit 0 ;;
+esac
+
+# Allow revert auto-commits
+case "$subject" in
+  Revert\ *) exit 0 ;;
+esac
+
+types="feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert"
+pattern="^($types)(\([a-zA-Z0-9_-]+\))?: .+"
+
+if ! echo "$subject" | grep -Eq "$pattern"; then
+  echo "ERROR: commit message does not follow Conventional Commits format."
+  echo ""
+  echo "  Expected: <type>: <subject>  or  <type>(<scope>): <subject>"
+  echo "  Allowed types: feat, fix, chore, docs, refactor, test, style, perf, ci, build, revert"
+  echo ""
+  echo "  Got: $subject"
+  exit 1
+fi
+
+# Subject line max 100 chars
+if [ ${#subject} -gt 100 ]; then
+  echo "ERROR: subject line exceeds 100 characters (${#subject})."
+  exit 1
+fi
+
+# Body lines max 200 chars
+line_num=0
+while IFS= read -r line; do
+  line_num=$((line_num + 1))
+  # Skip subject line
+  if [ "$line_num" -le 1 ]; then
+    continue
+  fi
+  if [ ${#line} -gt 200 ]; then
+    echo "ERROR: line $line_num exceeds 200 characters (${#line})."
+    exit 1
+  fi
+done < "$msg_file"

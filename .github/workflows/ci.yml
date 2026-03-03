@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-commits:
+    name: Validate commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check conventional commits
+        run: |
+          types="feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert"
+          pattern="^($types)(\([a-zA-Z0-9_-]+\))?: .+"
+          failed=0
+
+          while IFS= read -r subject; do
+            # Skip merge and revert auto-commits
+            case "$subject" in
+              Merge\ *|Revert\ *) continue ;;
+            esac
+
+            if ! echo "$subject" | grep -Eq "$pattern"; then
+              echo "BAD: $subject"
+              failed=1
+            fi
+
+            if [ ${#subject} -gt 100 ]; then
+              echo "TOO LONG (${#subject} chars): $subject"
+              failed=1
+            fi
+          done <<EOF
+          $(git log --format=%s origin/main..HEAD)
+          EOF
+
+          if [ "$failed" -eq 1 ]; then
+            echo ""
+            echo "One or more commits do not follow Conventional Commits."
+            echo "Expected: <type>: <subject> or <type>(<scope>): <subject>"
+            exit 1
+          fi
+
+  validate-branch:
+    name: Validate branch name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          branch="${{ github.head_ref }}"
+          pattern="^(feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert)/.+"
+
+          if ! echo "$branch" | grep -Eq "$pattern"; then
+            echo "ERROR: branch '$branch' does not follow the naming convention."
+            echo "Expected: <type>/<description>"
+            exit 1
+          fi
+
+  lint-and-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Run tests
+        run: go test -race ./...
+
+      - name: Build
+        run: go build -o /dev/null ./cmd/api
