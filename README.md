@@ -32,18 +32,23 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
    cp .env.example .env
    ```
 
-2. Start the API and database:
+2. Set up git hooks:
+   ```sh
+   make setup-hooks
+   ```
+
+3. Start the API and database:
    ```sh
    make docker-up
    ```
 
-3. Verify the server is running:
+4. Verify the server is running:
    ```sh
    curl localhost:8080/healthz
    ```
    You should see `{"status":"ok"}`.
 
-4. To stop everything:
+5. To stop everything:
    ```sh
    make docker-down
    ```
@@ -59,6 +64,8 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
 | `make test` | Run all tests with race detection |
 | `make lint` | Run golangci-lint |
 | `make vet` | Run go vet |
+| `make setup-hooks` | Configure git to use project hooks |
+| `make check` | Run vet, lint, test, and build in sequence |
 
 ### Hot Reload
 

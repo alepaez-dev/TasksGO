@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-commits:
+    name: Validate commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check conventional commits
+        run: |
+          types="feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert"
+          pattern="^($types)(\([a-zA-Z0-9_-]+\))?: .+"
+          failed=0
+
+          for sha in $(git log --format=%H origin/main..HEAD); do
+            subject=$(git log -1 --format=%s "$sha")
+
+            # Skip merge and revert auto-commits
+            case "$subject" in
+              Merge\ *|Revert\ *) continue ;;
+            esac
+
+            if ! echo "$subject" | grep -Eq "$pattern"; then
+              echo "BAD: $subject"
+              failed=1
+            fi
+
+            if [ ${#subject} -gt 100 ]; then
+              echo "TOO LONG (${#subject} chars): $subject"
+              failed=1
+            fi
+
+            # Body lines max 200 chars
+            line_num=0
+            while IFS= read -r line; do
+              line_num=$((line_num + 1))
+              if [ ${#line} -gt 200 ]; then
+                echo "BODY LINE TOO LONG (line $line_num, ${#line} chars) in commit $sha"
+                failed=1
+              fi
+            done <<BODY
+          $(git log -1 --format=%b "$sha")
+          BODY
+          done
+
+          if [ "$failed" -eq 1 ]; then
+            echo ""
+            echo "One or more commits do not follow Conventional Commits."
+            echo "Expected: <type>: <subject> or <type>(<scope>): <subject>"
+            exit 1
+          fi
+
+  validate-branch:
+    name: Validate branch name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          pattern="^(feat|fix|chore|docs|refactor|test|style|perf|ci|build|revert)/.+"
+
+          if ! echo "$BRANCH" | grep -Eq "$pattern"; then
+            echo "ERROR: branch '$BRANCH' does not follow the naming convention."
+            echo "Expected: <type>/<description>"
+            exit 1
+          fi
+
+  lint-and-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Run tests
+        run: go test -race ./...
+
+      - name: Build
+        run: go build -o /dev/null ./cmd/api
