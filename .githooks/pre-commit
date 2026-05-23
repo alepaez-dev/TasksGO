@@ -1,17 +1,71 @@
 #!/bin/sh
-# Run go vet and golangci-lint on staged Go files.
+# Pre-commit checks:
+#   1. Block secret/credential files from being staged
+#   2. Verify staged Go files are formatted with goimports
+#   3. Verify go.mod / go.sum are tidy
+#   4. Run go vet and golangci-lint on staged packages
 
 set -e
 
-# Collect staged .go files (excluding deletions)
-staged_files=$(git diff --cached --name-only --diff-filter=d -- '*.go' || true)
+staged_all=$(git diff --cached --name-only --diff-filter=d || true)
 
-if [ -z "$staged_files" ]; then
+if [ -z "$staged_all" ]; then
   exit 0
 fi
 
-# Extract unique package directories
-packages=$(echo "$staged_files" | xargs -n1 dirname | sort -u | sed 's|^|./|')
+# 1) Block secret/credential files
+forbidden_pattern='(^|/)(\.env(\..+)?|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12)$'
+blocked=$(echo "$staged_all" | grep -E "$forbidden_pattern" | grep -vE '(^|/)\.env\.example$' || true)
+if [ -n "$blocked" ]; then
+  echo "ERROR: refusing to commit secret/credential files:"
+  echo "$blocked" | sed 's/^/  /'
+  echo ""
+  echo "  Unstage them: git restore --staged <file>"
+  echo "  If a secret was already committed, also remove it from history and rotate it."
+  exit 1
+fi
+
+staged_go=$(echo "$staged_all" | grep -E '\.go$' || true)
+
+# 2) goimports formatting check (staged Go files only)
+if [ -n "$staged_go" ]; then
+  if command -v goimports >/dev/null 2>&1; then
+    echo "Running goimports on staged Go files..."
+    bad=$(echo "$staged_go" | xargs goimports -l)
+    if [ -n "$bad" ]; then
+      echo "ERROR: the following files are not formatted (run 'goimports -w <file>'):"
+      echo "$bad" | sed 's/^/  /'
+      exit 1
+    fi
+    echo "goimports passed."
+  else
+    echo "goimports not found, skipping (CI will enforce it)."
+    echo "  Install: go install golang.org/x/tools/cmd/goimports@latest"
+  fi
+fi
+
+# 3) go.mod / go.sum tidy freshness
+needs_tidy=0
+if echo "$staged_all" | grep -qE '(^|/)(go\.mod|go\.sum)$'; then needs_tidy=1; fi
+if [ -n "$staged_go" ]; then needs_tidy=1; fi
+if [ "$needs_tidy" -eq 1 ]; then
+  echo "Checking go.mod / go.sum are tidy..."
+  tidy_out=$(go mod tidy -diff 2>&1 || true)
+  if [ -n "$tidy_out" ]; then
+    echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and stage the changes."
+    echo ""
+    echo "$tidy_out"
+    exit 1
+  fi
+  echo "go.mod / go.sum are tidy."
+fi
+
+# 4) go vet + golangci-lint on staged packages
+if [ -z "$staged_go" ]; then
+  exit 0
+fi
+
+packages=$(echo "$staged_go" | xargs -n1 dirname | sort -u | sed 's|^|./|')
 
 echo "Running go vet on staged packages..."
 echo "$packages" | xargs go vet
