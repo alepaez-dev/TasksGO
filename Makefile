@@ -50,5 +50,19 @@ verify-fmt:
 
 verify-tidy:
 	@echo "==> go mod tidy"
-	@tidy_out=$$(go mod tidy -diff 2>&1); \
-	if [ -n "$$tidy_out" ]; then echo "ERROR: go.mod / go.sum not tidy (run 'make fmt'):"; echo ""; echo "$$tidy_out"; exit 1; fi
+	@tidy_exit=0; \
+	tidy_out=$$(go mod tidy -diff 2>&1) || tidy_exit=$$?; \
+	if [ "$$tidy_exit" -eq 0 ]; then \
+	  exit 0; \
+	fi; \
+	if echo "$$tidy_out" | head -1 | grep -qE '^(diff |---|\+\+\+)'; then \
+	  echo "ERROR: go.mod / go.sum not tidy (run 'make fmt'):"; \
+	  echo ""; \
+	  echo "$$tidy_out"; \
+	  exit 1; \
+	else \
+	  echo "ERROR: 'go mod tidy -diff' failed (network or toolchain issue):"; \
+	  echo ""; \
+	  echo "$$tidy_out"; \
+	  exit 1; \
+	fi
