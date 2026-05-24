@@ -12,7 +12,7 @@ jobs:
     name: Validate commit messages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -76,23 +76,66 @@ jobs:
             exit 1
           fi
 
+  forbidden-files:
+    name: Block secret/credential files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check tracked files
+        # Keep this pattern in sync with .githooks/pre-commit.
+        run: |
+          forbidden_pattern='(^|/)(\.env(\..+)?|\.netrc|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12|\.aws/credentials|\.aws/config)$'
+          blocked=$(git ls-files | grep -Ei "$forbidden_pattern" | grep -viE '(^|/)\.env\.example$' || true)
+          if [ -n "$blocked" ]; then
+            echo "ERROR: secret/credential files are tracked in git:"
+            echo "$blocked" | sed 's/^/  /'
+            exit 1
+          fi
+
   lint-and-test:
     name: Lint and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version: "1.25"
+
+      - name: Check goimports formatting
+        run: |
+          go install golang.org/x/tools/cmd/goimports@v0.45.0
+          bad=$(git ls-files '*.go' | xargs goimports -l) || true
+          if [ -n "$bad" ]; then
+            echo "ERROR: files not formatted with goimports:"
+            echo "$bad" | sed 's/^/  /'
+            exit 1
+          fi
+
+      - name: Check go.mod / go.sum are tidy
+        run: |
+          tidy_exit=0
+          tidy_out=$(go mod tidy -diff 2>&1) || tidy_exit=$?
+          if [ "$tidy_exit" -eq 0 ]; then
+            exit 0
+          fi
+          if echo "$tidy_out" | head -1 | grep -qE '^(diff |---|\+\+\+)'; then
+            echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and commit the changes."
+          else
+            echo "ERROR: 'go mod tidy -diff' failed (likely tool or network error, not a tidy issue)."
+          fi
+          echo ""
+          echo "$tidy_out"
+          exit 1
 
       - name: Run go vet
         run: go vet ./...
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: latest
+          version: v2.12.2
 
       - name: Run tests
         run: go test -race ./...

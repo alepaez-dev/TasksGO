@@ -7,6 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// NewRouter constructs the application's HTTP router with request ID, logging,
+// security headers, CORS, and panic recovery middleware wired in.
 func NewRouter(log *slog.Logger, appEnv string) *chi.Mux {
 	r := chi.NewRouter()
 

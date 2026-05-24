@@ -24,6 +24,11 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 - [Go 1.24+](https://go.dev/dl/) (for local development without Docker)
+- [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) and [golangci-lint](https://golangci-lint.run/), used by the pre-commit hook:
+  ```sh
+  go install golang.org/x/tools/cmd/goimports@latest
+  brew install golangci-lint   # or see https://golangci-lint.run/welcome/install/
+  ```
 
 ### Setup
 
@@ -32,10 +37,16 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
    cp .env.example .env
    ```
 
-2. Set up git hooks:
+2. Set up git hooks (required):
    ```sh
    make setup-hooks
    ```
+   This registers `.githooks/` so every commit is checked for:
+   - Conventional Commits format (`commit-msg`)
+   - Secret/credential files (`.env`, `*.pem`, SSH keys), `goimports` formatting, `go mod tidy` freshness, `go vet`, and `golangci-lint` (`pre-commit`)
+   - Branch name convention `<type>/<description>` (`pre-push`)
+
+   The same checks run in CI, so anything skipped locally will fail the PR.
 
 3. Start the API and database:
    ```sh
@@ -66,6 +77,8 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
 | `make vet` | Run go vet |
 | `make setup-hooks` | Configure git to use project hooks |
 | `make check` | Run vet, lint, test, and build in sequence |
+| `make fmt` | Auto-apply `goimports -w` and `go mod tidy` |
+| `make verify` | Run all CI-equivalent gates locally (goimports, tidy, vet, lint, test, build). Read-only; run `make fmt` to fix format/tidy failures. |
 
 ### Hot Reload
 

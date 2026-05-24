@@ -1,17 +1,87 @@
 #!/bin/sh
-# Run go vet and golangci-lint on staged Go files.
+# Pre-commit checks (best-effort, run against working-tree files).
+# CI (.github/workflows/ci.yml) is authoritative and runs the same checks
+# against the committed content. Partial staging within a single file can
+# cause false positives/negatives locally; CI will catch what the hook misses.
+#
+# Checks:
+#   1. Block secret/credential files from being staged
+#   2. Verify staged Go files are formatted with goimports
+#   3. Verify go.mod / go.sum are tidy
+#   4. Run go vet and golangci-lint on staged packages
 
 set -e
 
-# Collect staged .go files (excluding deletions)
-staged_files=$(git diff --cached --name-only --diff-filter=d -- '*.go' || true)
+staged_all=$(git diff --cached --name-only --diff-filter=d || true)
 
-if [ -z "$staged_files" ]; then
+if [ -z "$staged_all" ]; then
   exit 0
 fi
 
-# Extract unique package directories
-packages=$(echo "$staged_files" | xargs -n1 dirname | sort -u | sed 's|^|./|')
+# 1) Block secret/credential files (filename heuristics; case-insensitive)
+# Keep this pattern in sync with .github/workflows/ci.yml (forbidden-files job).
+forbidden_pattern='(^|/)(\.env(\..+)?|\.netrc|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12|\.aws/credentials|\.aws/config)$'
+blocked=$(echo "$staged_all" | grep -Ei "$forbidden_pattern" | grep -viE '(^|/)\.env\.example$' || true)
+if [ -n "$blocked" ]; then
+  echo "ERROR: refusing to commit secret/credential files:"
+  echo "$blocked" | sed 's/^/  /'
+  echo ""
+  echo "  Unstage them: git restore --staged <file>"
+  echo "  If a secret was already committed, also remove it from history and rotate it."
+  exit 1
+fi
+
+staged_go=$(echo "$staged_all" | grep -E '\.go$' || true)
+
+# 2) goimports formatting check (staged Go files only)
+if [ -n "$staged_go" ]; then
+  if command -v goimports >/dev/null 2>&1; then
+    echo "Running goimports on staged Go files..."
+    bad=$(echo "$staged_go" | xargs goimports -l) || true
+    if [ -n "$bad" ]; then
+      echo "ERROR: the following files are not formatted (run 'goimports -w <file>'):"
+      echo "$bad" | sed 's/^/  /'
+      exit 1
+    fi
+    echo "goimports passed."
+  else
+    echo "goimports not found, skipping (CI will enforce it)."
+    echo "  Install: go install golang.org/x/tools/cmd/goimports@latest"
+  fi
+fi
+
+# 3) go.mod / go.sum tidy freshness
+needs_tidy=0
+if echo "$staged_all" | grep -qE '(^|/)(go\.mod|go\.sum)$'; then needs_tidy=1; fi
+if [ -n "$staged_go" ]; then needs_tidy=1; fi
+if [ "$needs_tidy" -eq 1 ]; then
+  go_minor=$(go env GOVERSION 2>/dev/null | sed -nE 's/^go1\.([0-9]+).*/\1/p')
+  if [ -z "$go_minor" ] || [ "$go_minor" -lt 23 ]; then
+    echo "'go mod tidy -diff' requires Go 1.23+; skipping (CI will enforce)."
+  else
+    echo "Checking go.mod / go.sum are tidy..."
+    tidy_exit=0
+    tidy_out=$(go mod tidy -diff 2>&1) || tidy_exit=$?
+    if [ "$tidy_exit" -eq 0 ]; then
+      echo "go.mod / go.sum are tidy."
+    elif echo "$tidy_out" | head -1 | grep -qE '^(diff |---|\+\+\+)'; then
+      echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and stage the changes."
+      echo ""
+      echo "$tidy_out"
+      exit 1
+    else
+      echo "WARNING: 'go mod tidy -diff' failed (network or toolchain issue); skipping (CI will enforce)."
+      echo "$tidy_out"
+    fi
+  fi
+fi
+
+# 4) go vet + golangci-lint on staged packages
+if [ -z "$staged_go" ]; then
+  exit 0
+fi
+
+packages=$(echo "$staged_go" | xargs -n1 dirname | sort -u | sed 's|^|./|')
 
 echo "Running go vet on staged packages..."
 echo "$packages" | xargs go vet

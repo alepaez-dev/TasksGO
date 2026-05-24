@@ -8,17 +8,20 @@ import (
 	"strconv"
 )
 
+// Config holds the full application configuration loaded from the environment.
 type Config struct {
 	App      App
 	Postgres Postgres
 	LogLevel string
 }
 
+// App holds general application settings (environment and port).
 type App struct {
 	Env  string
 	Port int
 }
 
+// Postgres holds PostgreSQL connection parameters.
 type Postgres struct {
 	Host     string
 	Port     int
@@ -27,6 +30,7 @@ type Postgres struct {
 	DB       string
 }
 
+// DSN returns the PostgreSQL connection string with sslmode disabled.
 func (p Postgres) DSN() string {
 	u := url.URL{
 		Scheme:   "postgres",
@@ -38,6 +42,8 @@ func (p Postgres) DSN() string {
 	return u.String()
 }
 
+// Load reads the application configuration from environment variables,
+// returning an error if any required variable is missing or invalid.
 func Load() (Config, error) {
 	var errs []error
 
