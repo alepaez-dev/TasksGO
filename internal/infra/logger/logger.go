@@ -5,7 +5,8 @@ import (
 	"log/slog"
 )
 
-// dev uses human-readable; all other environments use JSON.
+// New returns a slog.Logger configured for the given environment: human-readable
+// text in development, JSON elsewhere, both filtered by the given level.
 func New(w io.Writer, env string, level slog.Level) *slog.Logger {
 	opts := &slog.HandlerOptions{Level: level}
 
@@ -19,6 +20,8 @@ func New(w io.Writer, env string, level slog.Level) *slog.Logger {
 	return slog.New(handler)
 }
 
+// ParseLevel converts a level name (debug, info, warn, error) to a slog.Level,
+// defaulting to LevelInfo for unrecognized values.
 func ParseLevel(s string) slog.Level {
 	switch s {
 	case "debug":

@@ -31,3 +31,4 @@ tmp/
 docker-compose.override.yml
 
 CLAUDE.md
+.claude/

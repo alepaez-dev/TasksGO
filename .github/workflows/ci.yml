@@ -83,9 +83,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check tracked files
+        # Keep this pattern in sync with .githooks/pre-commit.
         run: |
-          forbidden_pattern='(^|/)(\.env(\..+)?|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12)$'
-          blocked=$(git ls-files | grep -E "$forbidden_pattern" | grep -vE '(^|/)\.env\.example$' || true)
+          forbidden_pattern='(^|/)(\.env(\..+)?|\.netrc|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12|\.aws/credentials|\.aws/config)$'
+          blocked=$(git ls-files | grep -Ei "$forbidden_pattern" | grep -viE '(^|/)\.env\.example$' || true)
           if [ -n "$blocked" ]; then
             echo "ERROR: secret/credential files are tracked in git:"
             echo "$blocked" | sed 's/^/  /'
@@ -104,7 +105,7 @@ jobs:
 
       - name: Check goimports formatting
         run: |
-          go install golang.org/x/tools/cmd/goimports@latest
+          go install golang.org/x/tools/cmd/goimports@v0.45.0
           bad=$(git ls-files '*.go' | xargs goimports -l)
           if [ -n "$bad" ]; then
             echo "ERROR: files not formatted with goimports:"
@@ -114,13 +115,19 @@ jobs:
 
       - name: Check go.mod / go.sum are tidy
         run: |
-          tidy_out=$(go mod tidy -diff 2>&1 || true)
-          if [ -n "$tidy_out" ]; then
-            echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and commit the changes."
-            echo ""
-            echo "$tidy_out"
-            exit 1
+          tidy_out=$(go mod tidy -diff 2>&1)
+          tidy_exit=$?
+          if [ "$tidy_exit" -eq 0 ]; then
+            exit 0
           fi
+          if echo "$tidy_out" | head -1 | grep -qE '^(diff |---|\+\+\+)'; then
+            echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and commit the changes."
+          else
+            echo "ERROR: 'go mod tidy -diff' failed (likely tool or network error, not a tidy issue)."
+          fi
+          echo ""
+          echo "$tidy_out"
+          exit 1
 
       - name: Run go vet
         run: go vet ./...
@@ -128,7 +135,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v2.12.2
 
       - name: Run tests
         run: go test -race ./...

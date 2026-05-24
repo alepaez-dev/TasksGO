@@ -6,6 +6,8 @@ import (
 	"github.com/go-chi/cors"
 )
 
+// CORS returns middleware that allows requests from origins configured for the
+// given app environment, blocking all cross-origin requests when no origins are allowed.
 func CORS(appEnv string) func(http.Handler) http.Handler {
 	var allowedOrigins []string
 

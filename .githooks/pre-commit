@@ -1,5 +1,10 @@
 #!/bin/sh
-# Pre-commit checks:
+# Pre-commit checks (best-effort, run against working-tree files).
+# CI (.github/workflows/ci.yml) is authoritative and runs the same checks
+# against the committed content. Partial staging within a single file can
+# cause false positives/negatives locally; CI will catch what the hook misses.
+#
+# Checks:
 #   1. Block secret/credential files from being staged
 #   2. Verify staged Go files are formatted with goimports
 #   3. Verify go.mod / go.sum are tidy
@@ -13,9 +18,10 @@ if [ -z "$staged_all" ]; then
   exit 0
 fi
 
-# 1) Block secret/credential files
-forbidden_pattern='(^|/)(\.env(\..+)?|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12)$'
-blocked=$(echo "$staged_all" | grep -E "$forbidden_pattern" | grep -vE '(^|/)\.env\.example$' || true)
+# 1) Block secret/credential files (filename heuristics; case-insensitive)
+# Keep this pattern in sync with .github/workflows/ci.yml (forbidden-files job).
+forbidden_pattern='(^|/)(\.env(\..+)?|\.netrc|id_rsa|id_dsa|id_ecdsa|id_ed25519|.*\.pem|.*\.key|.*\.pfx|.*\.p12|\.aws/credentials|\.aws/config)$'
+blocked=$(echo "$staged_all" | grep -Ei "$forbidden_pattern" | grep -viE '(^|/)\.env\.example$' || true)
 if [ -n "$blocked" ]; then
   echo "ERROR: refusing to commit secret/credential files:"
   echo "$blocked" | sed 's/^/  /'
@@ -49,15 +55,25 @@ needs_tidy=0
 if echo "$staged_all" | grep -qE '(^|/)(go\.mod|go\.sum)$'; then needs_tidy=1; fi
 if [ -n "$staged_go" ]; then needs_tidy=1; fi
 if [ "$needs_tidy" -eq 1 ]; then
-  echo "Checking go.mod / go.sum are tidy..."
-  tidy_out=$(go mod tidy -diff 2>&1 || true)
-  if [ -n "$tidy_out" ]; then
-    echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and stage the changes."
-    echo ""
-    echo "$tidy_out"
-    exit 1
+  go_minor=$(go env GOVERSION 2>/dev/null | sed -nE 's/^go1\.([0-9]+).*/\1/p')
+  if [ -z "$go_minor" ] || [ "$go_minor" -lt 23 ]; then
+    echo "'go mod tidy -diff' requires Go 1.23+; skipping (CI will enforce)."
+  else
+    echo "Checking go.mod / go.sum are tidy..."
+    tidy_out=$(go mod tidy -diff 2>&1)
+    tidy_exit=$?
+    if [ "$tidy_exit" -eq 0 ]; then
+      echo "go.mod / go.sum are tidy."
+    elif echo "$tidy_out" | head -1 | grep -qE '^(diff |---|\+\+\+)'; then
+      echo "ERROR: go.mod / go.sum are not tidy. Run 'go mod tidy' and stage the changes."
+      echo ""
+      echo "$tidy_out"
+      exit 1
+    else
+      echo "WARNING: 'go mod tidy -diff' failed (network or toolchain issue); skipping (CI will enforce)."
+      echo "$tidy_out"
+    fi
   fi
-  echo "go.mod / go.sum are tidy."
 fi
 
 # 4) go vet + golangci-lint on staged packages

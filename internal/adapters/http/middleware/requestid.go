@@ -11,6 +11,8 @@ type contextKey string
 
 const requestIDKey contextKey = "request_id"
 
+// RequestID is middleware that propagates an incoming X-Request-ID header or
+// generates a new one, attaching it to the request context and response headers.
 func RequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := r.Header.Get("X-Request-ID")
@@ -24,6 +26,7 @@ func RequestID(next http.Handler) http.Handler {
 	})
 }
 
+// GetRequestID returns the request ID stored in the context, or the empty string if none is present.
 func GetRequestID(ctx context.Context) string {
 	if id, ok := ctx.Value(requestIDKey).(string); ok {
 		return id

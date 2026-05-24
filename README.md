@@ -27,6 +27,7 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
 - [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) and [golangci-lint](https://golangci-lint.run/), used by the pre-commit hook:
   ```sh
   go install golang.org/x/tools/cmd/goimports@latest
+  brew install golangci-lint   # or see https://golangci-lint.run/welcome/install/
   ```
 
 ### Setup
@@ -76,6 +77,8 @@ See [docs/tickets.md](docs/tickets.md) for detailed ticket design specs.
 | `make vet` | Run go vet |
 | `make setup-hooks` | Configure git to use project hooks |
 | `make check` | Run vet, lint, test, and build in sequence |
+| `make fmt` | Auto-apply `goimports -w` and `go mod tidy` |
+| `make verify` | Run all CI-equivalent gates locally (goimports, tidy, vet, lint, test, build). Read-only; run `make fmt` to fix format/tidy failures. |
 
 ### Hot Reload
 

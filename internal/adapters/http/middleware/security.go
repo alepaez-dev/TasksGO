@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+// SecurityHeaders is middleware that sets common HTTP security response headers
+// (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy).
 func SecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -15,6 +17,8 @@ func SecurityHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// Recoverer returns middleware that recovers from panics in downstream handlers,
+// logs the error with request context, and responds with HTTP 500.
 func Recoverer(log *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
