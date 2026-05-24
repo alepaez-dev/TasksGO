@@ -106,7 +106,7 @@ jobs:
       - name: Check goimports formatting
         run: |
           go install golang.org/x/tools/cmd/goimports@v0.45.0
-          bad=$(git ls-files '*.go' | xargs goimports -l)
+          bad=$(git ls-files '*.go' | xargs goimports -l) || true
           if [ -n "$bad" ]; then
             echo "ERROR: files not formatted with goimports:"
             echo "$bad" | sed 's/^/  /'
@@ -115,8 +115,8 @@ jobs:
 
       - name: Check go.mod / go.sum are tidy
         run: |
-          tidy_out=$(go mod tidy -diff 2>&1)
-          tidy_exit=$?
+          tidy_exit=0
+          tidy_out=$(go mod tidy -diff 2>&1) || tidy_exit=$?
           if [ "$tidy_exit" -eq 0 ]; then
             exit 0
           fi
